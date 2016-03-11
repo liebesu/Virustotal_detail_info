@@ -8,7 +8,7 @@ import pefile
 import requests
 from bs4 import BeautifulSoup
 def openurl():
-    url='https://www.virustotal.com/en/file/4dd2e027e5eb580efcb7b08a5250cbb0c4de78b31697a9009faf0ee980bda041/analysis/'
+    url='https://www.virustotal.com/en/file/52d3df0ed60c46f336c131bf2ca454f73bafdc4b04dfa2aea80746f5ba9e6d1c/analysis/1273894724/'
     print "1"
     response=urllib2.urlopen(url)
     print response.getcode()
@@ -19,6 +19,9 @@ def openurl():
     response2=urllib2.urlopen(request)
     print response2.getcode()
     print len(response2.read())
+    a=open("2","w")
+    a.write(response2.read())
+    a.close()
     print "3"
     cj=cookielib.CookieJar()
     opener=urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
@@ -26,6 +29,10 @@ def openurl():
     response3=urllib2.urlopen(request)
     print response3.getcode()
     print len(response3.read())
+    print response3.read()
+    a=open("3","w")
+    a.write(response3.read())
+    a.close()
     print cj
     print "4"
     r=requests.session()
