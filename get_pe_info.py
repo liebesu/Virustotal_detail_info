@@ -1,66 +1,30 @@
 # -*- encoding:utf-8 -*-
 import cookielib
+import httplib
 import os
+import urllib
 import urllib2
 
 __author__ = 'liebesu'
 import pefile
 import requests
 from bs4 import BeautifulSoup
-def openurl():
-    url='https://www.virustotal.com/en/file/52d3df0ed60c46f336c131bf2ca454f73bafdc4b04dfa2aea80746f5ba9e6d1c/analysis/1273894724/'
-    print "1"
-    response=urllib2.urlopen(url)
-    print response.getcode()
-    print len(response.read())
-    print "2"
-    request = urllib2.Request(url)
-    request.add_header("user-agent","Mozilla/5.0")
-    response2=urllib2.urlopen(request)
-    print response2.getcode()
-    print len(response2.read())
-    a=open("2","w")
-    a.write(response2.read())
-    a.close()
-    print "3"
-    cj=cookielib.CookieJar()
-    opener=urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-    urllib2.install_opener(opener)
-    response3=urllib2.urlopen(request)
-    print response3.getcode()
-    print len(response3.read())
-    print response3.read()
-    a=open("3","w")
-    a.write(response3.read())
-    a.close()
-    print cj
-    print "4"
-    r=requests.session()
-    s=r.get(url)
+s=requests.session()
+longurl='https://www.virustotal.com/en/file/634f60864019a56185191d387e69faecead42a978075d844aa2deca8e7987c4a/analysis/'
+#apiurl='https://www.virustotal.com/en/user/'+param['username']+'/apikey/'
+headers = { "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+            'accept-encoding':'gzip, deflate, sdch',
+            'accept-language':'zh-CN,zh;q=0.8,zh-TW;q=0.6'}
+parms={ 'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.95 Safari/537.36',
+           'Referer': 'https://www.virustotal.com/en/file/6076632ad5b0c3dedd84769a9b6f13bff1723a2bfa4ab75820aa61df7b33b458/analysis/',
+           'Content-Type': 'application/x-www-form-urlencoded',}
+cookies={'VT_PREFERRED_LANGUAGE=en'}
+r=s.get(longurl,verify=True)
+print r.cookies
+print len(r.text)
+print r.text
+if r.status_code == 200:
+    page=r.text.encode('ascii', 'ignore')
+    print page
 
-
-    print "5"
-
-
-    #Cookie 容器
-    __cookie = cookielib.CookieJar()
-    __req = urllib2.build_opener(urllib2.HTTPCookieProcessor(__cookie))
-    urllib2.install_opener(__req)
-
-    #先请求一下首页, 得到Cookie
-    urllib2.urlopen(url)
-
-    #然后再请求查询
-    response = urllib2.urlopen(url)
-    html=response.read()
-
-    #输出结果
-    print html
-    print "6"
-    f=requests.get(url)
-    f=str(f)
-    print f
-
-if __name__=="__main__":
-    openurl()
 
