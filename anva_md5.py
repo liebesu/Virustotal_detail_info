@@ -20,6 +20,8 @@ print tds
 a=open("md5","a")
 for i in range(2,len(tds)/8):
     m=5*i-9
-    a.write(str(tds[m]).replace('<td>','').replace('</td>','').replace(' ',''))
+    w=str(tds[m]).replace('<td>','').replace('</td>','').replace(' ','')
+    print w
+    a.write(w)
     a.write('\n')
 a.close()
