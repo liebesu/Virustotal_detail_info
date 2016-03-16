@@ -17,7 +17,11 @@ def get_page():
         a=open("html1",'a')
         a.write(HTML)
         a.close()
-def convert_to_json():
+def convert_to_json(page_data):
+    json={}
+    
+    soup=BeautifulSoup(page_data,"html.parser")
+
     pass
 
     #soup=BeautifulSoup(HTML,'html.parser')
