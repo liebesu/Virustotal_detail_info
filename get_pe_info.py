@@ -1,5 +1,5 @@
 import httplib
-import BeautifulSoup
+from bs4 import BeautifulSoup
 def get_page():
     headers = {
                'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36',
@@ -13,17 +13,27 @@ def get_page():
     response = conn.getresponse()
     if response.status == 200:
         HTML=response.read()
-        print len(HTML)
-        a=open("html1",'a')
-        a.write(HTML)
-        a.close()
+        convert_to_json(HTML)
 def convert_to_json(page_data):
     json={}
-    
-    soup=BeautifulSoup(page_data,"html.parser")
 
-    pass
+    soup=BeautifulSoup(page_data,"html.parser")
+    h5s=soup.find_all('h5')
+    #spans=soup.find_all('span','field_key')
+    classs=soup.find_all('div','enum')
+
+    for text1 in h5s:
+        print text1.get_text()
+    #for span in spans:
+     #   print span.get_text()
+    for class_ in classs:
+        print class_.get_text()
+
+
 
     #soup=BeautifulSoup(HTML,'html.parser')
 if __name__=="__main__":
     get_page()
+a[1]
+b[123]
+c[]
