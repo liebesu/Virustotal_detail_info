@@ -1,5 +1,6 @@
 import httplib
 from bs4 import BeautifulSoup
+import json
 def get_page():
     headers = {
                'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36',
@@ -15,25 +16,24 @@ def get_page():
         HTML=response.read()
         convert_to_json(HTML)
 def convert_to_json(page_data):
-    json={}
+
 
     soup=BeautifulSoup(page_data,"html.parser")
-    h5s=soup.find_all('h5')
-    #spans=soup.find_all('span','field_key')
-    classs=soup.find_all('div','enum')
+    h5s=soup.find('h5')
 
-    for text1 in h5s:
-        print text1.get_text()
+    #spans=soup.find_all('span','field_key')
+    #classs=soup.find('div','enum')
+
+    print h5s.get_text()
+    '''for text1 in h5s:
+        print text1.get_text()'''
     #for span in spans:
      #   print span.get_text()
-    for class_ in classs:
-        print class_.get_text()
+    '''for class_ in classs:
+        print class_.get_text("|", strip=True)'''
 
 
 
     #soup=BeautifulSoup(HTML,'html.parser')
 if __name__=="__main__":
     get_page()
-a[1]
-b[123]
-c[]
