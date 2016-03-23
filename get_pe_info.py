@@ -16,6 +16,8 @@ def get_page():
 def convert_to_json(page_data):
     jsons={}
     soup=BeautifulSoup(page_data,"html.parser")
+    keynum=len(soup.find_all(class_='field-key'))
+    print keynum
 
 
 
