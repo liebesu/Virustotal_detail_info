@@ -24,7 +24,7 @@ def convert_to_json(page_data):
     soup_h5=soup_details.h5
     soup_key=soup_details.span
     soup_value=soup_details.span.parent
-    key=soup_value.get_text().replace(soup_key.get_text(),"")
+    key=soup_value.get_text().replace(soup_key.get_text(),"").replace("\n","").replace("u","")
     result1={soup_h5.get_text():{soup_key.get_text():key}}
     jsons['pedetail']=result1
     print jsons
