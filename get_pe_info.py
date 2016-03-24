@@ -25,8 +25,9 @@ def convert_to_json(page_data):
     soup_key=soup_details.span
     soup_value=soup_details.span.parent
     key=soup_value.get_text().replace(soup_key.get_text(),"")
-    result={soup_h5.get_text():{soup_key.get_text():key}}
-    print result
+    result1={soup_h5.get_text():{soup_key.get_text():key}}
+    jsons['pedetail']=result1
+    print jsons
     '''print soup.h5.next_sibling.get_text()
     if ' PE imports' in  [h5.text for h5 in soup.find_all('h5')]:
         pass
