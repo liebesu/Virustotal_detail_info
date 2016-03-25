@@ -20,7 +20,8 @@ def convert_to_json(page_data):
     jsons={}
     soup=BeautifulSoup(page_data,"html.parser")
     soup_details=soup.find(id="file-details")
-
+    souptest=soup.find_all(class_="field-key","h5")
+    print [soup2 for soup2 in souptest.get_text()]
     soup_h5=soup_details.h5
     soup_key=soup_details.span
     soup_value=soup_details.span.parent
