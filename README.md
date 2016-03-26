@@ -1,0 +1,2 @@
+# Virustotal_detail_info
+get virustotal_detail_infomation use requests and beautifulsoup
