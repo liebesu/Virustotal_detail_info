@@ -1,4 +1,5 @@
 import httplib
+import re
 from bs4 import BeautifulSoup
 import json
 from requests.packages import chardet
@@ -17,11 +18,41 @@ def get_page():
         HTML=response.read()
         convert_to_json(HTML)
 def convert_to_json(page_data):
+    result={}
     jsons={}
+    content={}
     soup=BeautifulSoup(page_data,"html.parser")
-    soup_details=soup.find(id='file-details')
-    soup_details1=BeautifulSoup(str(soup_details),"html.parser")
-    enum_cons=soup_details1.find_all(class_="enum-container")
+    file_details=soup.find_all(id="file-details")
+    soup_details=BeautifulSoup(str(file_details),"html.parser")
+    enumss=soup_details.find_all(class_="enum-container")
+    a=open("enum-cib.html","a")
+    a.write(str(enumss))
+    a.close()
+    print len(enumss)
+    for enums in enumss:
+        h5_str=enums.previous_sibling.previous_sibling.get_text()
+        if h5_str=="PE sections":
+            enums=BeautifulSoup(str(enums),"html.parser")
+            keys=[keys.get_text()for keys in enums.find_all(class_=["enum" ,"text-bold"])]
+            content = []
+            print keys
+        else:
+            enums=BeautifulSoup(str(enums),"html.parser")
+            enums=enums.find_all(class_="enum")
+            content={}
+            for enum in enums:
+
+                key=enum.span.string.encode("utf-8","ignore")
+
+                value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","")
+
+                content[key]=value
+        jsons[h5_str]=content
+        result['file-detail']=jsons
+        print result
+   # print [soup_detail.replace("\n","") for soup_detail in soup_details]
+
+    '''enum_cons=soup_details1.find_all(class_="enum-container")
     for enum_con in enum_cons:
         #print soup_detail
         h5=enum_con.previous_sibling.previous_sibling.get_text()
@@ -30,7 +61,7 @@ def convert_to_json(page_data):
         print h5
         print key
         print value
-        '''soup_key=soup_details.span
+        soup_key=soup_details.span
         soup_value=soup_details.span.parent
         key=soup_value.get_text().replace(soup_key.get_text(),"").replace("\n","").replace("u","")
         result1={soup_h5.get_text():{soup_key.get_text():key}}
