@@ -45,6 +45,7 @@ def convert_to_json(page_data):
                 while '' in value:
                     value.remove('')
                 content.append(dict(zip(key, value)))
+                print content
             result[h5_str]=content
 
         else:
