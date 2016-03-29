@@ -30,15 +30,23 @@ def convert_to_json(page_data):
     a.close()
     print len(enumss)
     for enums in enumss:
-        h5_str=enums.previous_sibling.previous_sibling.get_text()
-        print h5_str
+        h5_str=enums.previous_sibling.previous_sibling.get_text().encode("utf-8","ignore")
         if  "PE sections" in h5_str:
             enums=BeautifulSoup(str(enums),"html.parser")
-            keys=[keys.span.get_text().replace("\n","") for keys in enums.find_all(class_="text-bold")]
-            print keys
-            for key in keys:
-                content[key]=enum.span.string.encode("utf-8","ignore")
-                print content
+            keys=enums.find(class_="text-bold")
+            key=[key.encode("utf-8","ignore").replace("\n","").replace("\\n","") for key in keys.stripped_strings]
+            while '' in key:
+                key.remove('')
+
+            enumss=enums.find_all(class_="enum")
+            content=[]
+            for enums in enumss:
+                value=[enum.encode("utf-8","ignore").replace("\n","").replace("\\n","") for enum in enums.stripped_strings]
+                while '' in value:
+                    value.remove('')
+                content.append(dict(zip(key, value)))
+            result[h5_str]=content
+
         else:
             enums=BeautifulSoup(str(enums),"html.parser")
             enums=enums.find_all(class_="enum")
