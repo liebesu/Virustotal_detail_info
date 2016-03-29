@@ -31,17 +31,19 @@ def convert_to_json(page_data):
     print len(enumss)
     for enums in enumss:
         h5_str=enums.previous_sibling.previous_sibling.get_text()
-        if h5_str=="PE sections":
+        print h5_str
+        if  "PE sections" in h5_str:
             enums=BeautifulSoup(str(enums),"html.parser")
-            keys=[keys.get_text()for keys in enums.find_all(class_=["enum" ,"text-bold"])]
-            content = []
+            keys=[keys.span.get_text().replace("\n","") for keys in enums.find_all(class_="text-bold")]
             print keys
+            for key in keys:
+                content[key]=enum.span.string.encode("utf-8","ignore")
+                print content
         else:
             enums=BeautifulSoup(str(enums),"html.parser")
             enums=enums.find_all(class_="enum")
             content={}
             for enum in enums:
-
                 key=enum.span.string.encode("utf-8","ignore")
 
                 value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","")
