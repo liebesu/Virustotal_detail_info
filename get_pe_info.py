@@ -23,10 +23,8 @@ def get_page(sha256):
         result['Behavioural'] =''
         result['File_defail'] = convert_detail_to_json(HTML)
         result['Behavioural']=convert_behavioutal_to_json(HTML)
-        print result
-        json_to_database(sha256,result)
+        json_to_database(sha256,json.dumps(result))
 def convert_detail_to_json(page_data):
-    print "1"
     jsons={}
     content={}
     soup=BeautifulSoup(page_data,"html.parser")
@@ -79,8 +77,9 @@ def convert_detail_to_json(page_data):
 
                 content[key]=value
             jsons[h5_str]=content
-    
     return jsons
+
+
 
 def convert_behavioutal_to_json(page_data):
     jsons={}
@@ -101,14 +100,13 @@ def convert_behavioutal_to_json(page_data):
             content[key]=value
         jsons[h5_str]=content
 
-    return jsons
+    print json.dumps(jsons)
 
 def json_to_database(sha256,result):
 
     db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
     cursor = db.cursor()
-    sql = "insert into %s (Sha256,File_detail,Behavioural_info) value (%s," % (datebasetable,sha256)+'"'+str(result['File_defail'])+'"'+","+"'"+str(result['Behavioural'])+"')"
-    print sql
+    sql = "insert into %s (Sha256,File_detail,Behavioural_info) value (%s," % (datebasetable,sha256)+","+result['File_defail']+","+result['Behavioural']+")"
     cursor.execute(sql)
     db.commit()
     cursor.close()
