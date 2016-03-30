@@ -1,10 +1,12 @@
 import httplib
-import re
+import os
 from bs4 import BeautifulSoup
 import json
-from requests.packages import chardet
-
-
+import MySQLdb
+from lib.core.readcnf import read_conf
+from lib.core.constants import ROOTPATH
+datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,sha256filename=read_conf()
+result={}
 def get_page():
     headers = {
                'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36',
@@ -16,19 +18,16 @@ def get_page():
     response = conn.getresponse()
     if response.status == 200:
         HTML=response.read()
-        convert_to_json(HTML)
-def convert_to_json(page_data):
-    result={}
+        result['File_defail']=convert_detail_to_json(HTML)
+        result['Behavioural']=convert_behavioutal_to_json(HTML)
+def convert_detail_to_json(page_data):
+
     jsons={}
     content={}
     soup=BeautifulSoup(page_data,"html.parser")
     file_details=soup.find_all(id="file-details")
     soup_details=BeautifulSoup(str(file_details),"html.parser")
     enumss=soup_details.find_all(class_="enum-container")
-    a=open("enum-cib.html","a")
-    a.write(str(enumss))
-    a.close()
-    print len(enumss)
     for enums in enumss:
         h5_str=enums.previous_sibling.previous_sibling.get_text().encode("utf-8","ignore")
         if  "PE sections" in h5_str:
@@ -44,70 +43,88 @@ def convert_to_json(page_data):
                 value=[enum.encode("utf-8","ignore").replace("\n","").replace("\\n","") for enum in enums.stripped_strings]
                 while '' in value:
                     value.remove('')
-                content.append(dict(zip(key, value)))
-                print content
-            result[h5_str]=content
+                if key !=value:
+                    content.append(dict(zip(key, value)))
+
+            jsons[h5_str]=content
+        elif 'PE imports' in h5_str:
+            enums=BeautifulSoup(str(enums),"xml")
+            enums=enums.find_all(class_="expand-canvas")
+            content={}
+            for enum in enums:
+                key=enum.a.string.encode("utf-8","ignore").replace("[+]","")
+
+                value=[string.encode("utf-8","ignore").replace("\\n","").replace(key,"").replace("[+]","") for string  in enum.stripped_strings]
+                while '' in value:
+                    value.remove('')
+
+                content[key]=value
+            jsons[h5_str]=content
+
 
         else:
-            enums=BeautifulSoup(str(enums),"html.parser")
+            enums=BeautifulSoup(str(enums),"xml")
             enums=enums.find_all(class_="enum")
             content={}
             for enum in enums:
-                key=enum.span.string.encode("utf-8","ignore")
+                if  "ExifTool file metadata" in h5_str or "Advanced heuristic and reputation engines" in h5_str:
+                    key=enum.find(class_="floated-field-key")
+                    key=key.string.encode("utf-8","ignore")
+
+                else:
+                    if enum.span:
+                        key=enum.span.string.encode("utf-8","ignore")
+
 
                 value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","")
 
                 content[key]=value
+            jsons[h5_str]=content
+        return jsons
+def convert_behavioutal_to_json(page_data):
+    jsons={}
+    content={}
+    soup=BeautifulSoup(page_data,"html.parser")
+    file_details=soup.find_all(id="behavioural-info")
+    soup_details=BeautifulSoup(str(file_details),"html.parser")
+    enumss=soup_details.find_all(class_="enum-container")
+    for enums in enumss:
+        h5_str=enums.previous_sibling.previous_sibling.get_text().encode("utf-8","ignore")
+        print h5_str
+        enums=BeautifulSoup(str(enums),"xml")
+        enums=enums.find_all(class_="enum")
+        content={}
+        for enum in enums:
+            if enum.span:
+                value=enum.span.string.encode("utf-8","ignore")
+                print value
+
+            key=enum.get_text(strip=True).encode("utf-8","ignore").replace(value,"").replace("\n","").replace("\\n","")
+            print key
+            content[key]=value
         jsons[h5_str]=content
-        result['file-detail']=jsons
-        print result
-   # print [soup_detail.replace("\n","") for soup_detail in soup_details]
+    return jsons
+def json_to_database():
+    pass
+def sha256():
+    db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
+    cursor = db.cursor()
 
-    '''enum_cons=soup_details1.find_all(class_="enum-container")
-    for enum_con in enum_cons:
-        #print soup_detail
-        h5=enum_con.previous_sibling.previous_sibling.get_text()
-        key=enum_con.span.get_text()
-        value=enum_con.get_text().replace(key,"")
-        print h5
-        print key
-        print value
-        soup_key=soup_details.span
-        soup_value=soup_details.span.parent
-        key=soup_value.get_text().replace(soup_key.get_text(),"").replace("\n","").replace("u","")
-        result1={soup_h5.get_text():{soup_key.get_text():key}}
-        jsons[soup_h5]=result1
-        print jsons
-    print soup.h5.next_sibling.get_text()
-    if ' PE imports' in  [h5.text for h5 in soup.find_all('h5')]:
-        pass
-
-    first=soup.h5
-    se=first.next_sibling
-    print se.children
-'''
-        #setions=soup.find_all(class_='')
-
-
-
-
-    #h5s=soup.find('h5')
-
-    #spans=soup.find_all('span','field_key')
-    '''classs=soup.find(id="file-details")
-    inner_items = [li.text.strip() for li in classs.find_all('h5')]'''
-
-    #print h5s.get_text()
-    '''for text1 in h5s:
-        print text1.get_text()'''
-    #for span in spans:
-     #   print span.get_text()
-    '''for class_ in classs:
-        print [text for text in class_.stripped_strings]'''
-
-
-
-
-    #soup=BeautifulSoup(HTML,'html.parser')
+    tmpsha256file='/var/lib/mysql-files/tmpsha256'
+    if os.path.exists(tmpsha256file):
+        os.remove(tmpsha256file)
+    sha256sql='select sha256 from '+datebasetable+' into outfile '+'"'+tmpsha256file+'"'
+    cursor.execute(sha256sql)
+    db.commit()
+    cursor.close()
+    db.close()
+    sha256filedir = os.path.join(ROOTPATH,"sha256")
+    allsha256file=os.path.join(sha256filedir,sha256filename)
+    os.system('cat '+tmpsha256file+" "+allsha256file +" |sort | uniq -u > sha256/tmp")
+    newsha256file=os.path.join(sha256filedir,'tmp')
+    newsha256=open(newsha256file,"r").readlines()
+    newsha256=[sha256.replace('\n', '').replace('\r', '') for sha256 in newsha256]
+    print len(newsha256)
+    return newsha256
 if __name__=="__main__":
     get_page()
