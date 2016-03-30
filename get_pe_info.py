@@ -23,7 +23,7 @@ def get_page(sha256):
         result['Behavioural'] =''
         result['File_defail'] = convert_detail_to_json(HTML)
         result['Behavioural']=convert_behavioutal_to_json(HTML)
-        json_to_database(sha256,json.dumps(result))
+        json_to_database(sha256,result)
 def convert_detail_to_json(page_data):
     jsons={}
     content={}
@@ -106,7 +106,8 @@ def json_to_database(sha256,result):
 
     db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
     cursor = db.cursor()
-    sql = "insert into %s (Sha256,File_detail,Behavioural_info) value (%s," % (datebasetable,sha256)+","+result['File_defail']+","+result['Behavioural']+")"
+    sql = "insert into %s (Sha256,File_detail,Behavioural_info) value (%s,%s,%s)" % (datebasetable,sha256,json.dumps(result['File_defail']),json.dumps(result['Behavioural']))
+    print sql
     cursor.execute(sql)
     db.commit()
     cursor.close()
