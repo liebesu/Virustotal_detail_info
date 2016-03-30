@@ -19,11 +19,14 @@ def get_page(sha256):
     response = conn.getresponse()
     if response.status == 200:
         HTML=response.read()
-        print HTML
+        result['File_defail'] =''
+        result['Behavioural'] =''
         result['File_defail'] = convert_detail_to_json(HTML)
         result['Behavioural']=convert_behavioutal_to_json(HTML)
+        print result
         json_to_database(sha256,result)
 def convert_detail_to_json(page_data):
+    print "1"
     jsons={}
     content={}
     soup=BeautifulSoup(page_data,"html.parser")
@@ -38,7 +41,6 @@ def convert_detail_to_json(page_data):
             key=[key.encode("utf-8","ignore").replace("\n","").replace("\\n","") for key in keys.stripped_strings]
             while '' in key:
                 key.remove('')
-
             enumss=enums.find_all(class_="enum")
             content=[]
             for enums in enumss:
@@ -47,7 +49,6 @@ def convert_detail_to_json(page_data):
                     value.remove('')
                 if key !=value:
                     content.append(dict(zip(key, value)))
-
             jsons[h5_str]=content
         elif 'PE imports' in h5_str:
             enums=BeautifulSoup(str(enums),"xml")
@@ -55,15 +56,11 @@ def convert_detail_to_json(page_data):
             content={}
             for enum in enums:
                 key=enum.a.string.encode("utf-8","ignore").replace("[+]","")
-
                 value=[string.encode("utf-8","ignore").replace("\\n","").replace(key,"").replace("[+]","") for string  in enum.stripped_strings]
                 while '' in value:
                     value.remove('')
-
                 content[key]=value
             jsons[h5_str]=content
-
-
         else:
             enums=BeautifulSoup(str(enums),"xml")
             enums=enums.find_all(class_="enum")
@@ -82,8 +79,9 @@ def convert_detail_to_json(page_data):
 
                 content[key]=value
             jsons[h5_str]=content
+    
     return jsons
-    print jsons
+
 def convert_behavioutal_to_json(page_data):
     jsons={}
     content={}
@@ -99,25 +97,22 @@ def convert_behavioutal_to_json(page_data):
         for enum in enums:
             if enum.span:
                 value=enum.span.string.encode("utf-8","ignore")
-
-
             key=enum.get_text(strip=True).encode("utf-8","ignore").replace(value,"").replace("\n","").replace("\\n","")
             content[key]=value
         jsons[h5_str]=content
+
     return jsons
-    print jsons
+
 def json_to_database(sha256,result):
-    try:
-        db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
-        cursor = db.cursor()
-        sql = "insert to %s (Sha256,File_detail,Behavioural_info) value (%s,%s,&s)"% (datebasetable,sha256,result['File_defail'],result['Behavioural'])
-        cursor.execute(sql)
-        db.commit()
-        cursor.close()
-        db.close()
-    except:
-        cursor.close()
-        db.close()
+
+    db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
+    cursor = db.cursor()
+    sql = "insert into %s (Sha256,File_detail,Behavioural_info) value (%s," % (datebasetable,sha256)+'"'+str(result['File_defail'])+'"'+","+"'"+str(result['Behavioural'])+"')"
+    print sql
+    cursor.execute(sql)
+    db.commit()
+    cursor.close()
+    db.close()
 
 def sha256():
     db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
