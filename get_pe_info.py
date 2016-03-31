@@ -1,6 +1,7 @@
 import httplib
 from multiprocessing import Pool
 import os
+import re
 from bs4 import BeautifulSoup
 import json
 import MySQLdb
@@ -65,25 +66,21 @@ def convert_detail_to_json(page_data):
             content={}
             for enum in enums:
                 if  "ExifTool file metadata" in h5_str :
-                    key=enum.find(class_="floated-field-key")
+                    key=enum.find(class_=re.compile("field-key"))
                     key=key.string.encode("utf-8","ignore")
                 if "Advanced heuristic and reputation engines" in h5_str:
-                    key=enum.find(class_="field-key")
+                    key=enum.find(class_=re.compile("field-key"))
                     key=key.string.encode("utf-8","ignore")
                 else:
-                    print enum.span
                     if enum.span:
-                        print h5_str
-                        key=enum.span.string.encode("utf-8","ignore")
+                        key=enum.span.stripped_strings.next().encode("utf-8","ignore")
                     else:
-                        key=enum.find(class_="floated-field-key")
+                        key=enum.find(class_=re.compile("field-key"))
                         key=key.string.encode("utf-8","ignore")
-                value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","")
-
+                value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","").replace("\'","/").replace('"',"/")
                 content[key]=value
             jsons[h5_str]=content
     return jsons
-
 
 
 def convert_behavioutal_to_json(page_data):
@@ -101,17 +98,18 @@ def convert_behavioutal_to_json(page_data):
         for enum in enums:
             if enum.span:
                 value=enum.span.string.encode("utf-8","ignore")
-            key=enum.get_text(strip=True).encode("utf-8","ignore").replace(value,"").replace("\n","").replace("\\n","")
+            key=enum.get_text(strip=True).encode("utf-8","ignore").replace(value,"").replace("\n","").replace("\\n","").replace('"',"")
             content[key]=value
         jsons[h5_str]=content
 
-    print json.dumps(jsons)
+    return jsons
 
 def json_to_database(sha256,result):
 
     db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
     cursor = db.cursor()
-    sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" % (datebasetable,sha256,json.dumps(result['File_defail']).replace("'","\\'"),json.dumps(result['Behavioural']).replace("'","\\'"))
+    sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" % (datebasetable,sha256,json.dumps(result['File_defail']).replace("'","\\'"),json.dumps(result['Behavioural']).replace("'","\\'").replace("\\","//"))
+    #sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" , (datebasetable,sha256,json.dumps(result['File_defail']),json.dumps(result['Behavioural']))
     cursor.execute(sql)
     db.commit()
     cursor.close()
@@ -138,12 +136,12 @@ def sha256():
     return newsha256
 if __name__=="__main__":
     allsha256 = sha256()
-    for sha256 in allsha256:
+    '''for sha256 in allsha256:
         print sha256
-        get_page(sha256)
-    '''pool = Pool(processes=2)
+        get_page(sha256)'''
+    pool = Pool(processes=20)
     pool.map(get_page, allsha256)
     pool.close()
-    pool.join()'''
+    pool.join()
     print "finish"
 
