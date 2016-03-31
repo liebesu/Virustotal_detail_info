@@ -105,15 +105,19 @@ def convert_behavioutal_to_json(page_data):
     return jsons
 
 def json_to_database(sha256,result):
-
-    db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
-    cursor = db.cursor()
-    sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" % (datebasetable,sha256,json.dumps(result['File_defail']).replace("'","\\'"),json.dumps(result['Behavioural']).replace("'","\\'").replace("\\","//"))
-    #sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" , (datebasetable,sha256,json.dumps(result['File_defail']),json.dumps(result['Behavioural']))
-    cursor.execute(sql)
-    db.commit()
-    cursor.close()
-    db.close()
+    try:
+        db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
+        cursor = db.cursor()
+        sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" % (datebasetable,sha256,json.dumps(result['File_defail']).replace("'","\\'"),json.dumps(result['Behavioural']).replace("'","\\'").replace("\\","//"))
+        #sql = "insert into %s (Sha256,File_detail,Behavioural_info) values ('%s','%s','%s')" , (datebasetable,sha256,json.dumps(result['File_defail']),json.dumps(result['Behavioural']))
+        cursor.execute(sql)
+        db.commit()
+        cursor.close()
+        db.close()
+    except:
+        cursor.close()
+        db.close()
+        pass
 
 def sha256():
     db = MySQLdb.connect(datebaseip,datebaseuser,datebasepsw,datebasename)
@@ -139,7 +143,7 @@ if __name__=="__main__":
     '''for sha256 in allsha256:
         print sha256
         get_page(sha256)'''
-    pool = Pool(processes=20)
+    pool = Pool(processes=50)
     pool.map(get_page, allsha256)
     pool.close()
     pool.join()
