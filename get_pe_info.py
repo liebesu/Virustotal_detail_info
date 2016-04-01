@@ -21,11 +21,17 @@ def get_page(sha256):
     response = conn.getresponse()
     if response.status == 200:
         HTML=response.read()
-        result['File_defail'] =''
-        result['Behavioural'] =''
-        result['File_defail'] = convert_detail_to_json(HTML)
-        result['Behavioural']=convert_behavioutal_to_json(HTML)
-        json_to_database(sha256,result)
+        try:
+            result['File_defail'] =''
+            result['Behavioural'] =''
+            result['File_defail'] = convert_detail_to_json(HTML)
+            result['Behavioural']=convert_behavioutal_to_json(HTML)
+            json_to_database(sha256,result)
+        except:
+            a=open("fail_sha256","a")
+            a.write(sha256)
+            a.close()
+            pass
 def convert_detail_to_json(page_data):
     global value
     jsons={}
@@ -92,7 +98,7 @@ def convert_behavioutal_to_json(page_data):
     soup=BeautifulSoup(page_data,"html.parser")
     file_details=soup.find_all(id="behavioural-info")
     soup_details=BeautifulSoup(str(file_details),"html.parser")
-    enumss=soup_details.find_all(class_="enum-container")
+    enumss=soup_details.find_all(class_=re.compile("enum-container"))
     for enums in enumss:
         h5_str=enums.previous_sibling.previous_sibling.get_text().encode("utf-8","ignore")
         enums=BeautifulSoup(str(enums),"xml")
@@ -146,7 +152,7 @@ if __name__=="__main__":
     '''for sha256 in allsha256:
         print sha256
         get_page(sha256)'''
-    pool = Pool(processes=50)
+    pool = Pool(processes=70)
     pool.map(get_page, allsha256)
     pool.close()
     pool.join()
