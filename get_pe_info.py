@@ -8,7 +8,8 @@ import MySQLdb
 from lib.core.readcnf import read_conf
 from lib.core.constants import ROOTPATH
 datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,sha256filename=read_conf()
-result={}
+result = {}
+value=""
 def get_page(sha256):
     headers = {
                'user-agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.87 Safari/537.36',
@@ -26,6 +27,7 @@ def get_page(sha256):
         result['Behavioural']=convert_behavioutal_to_json(HTML)
         json_to_database(sha256,result)
 def convert_detail_to_json(page_data):
+    global value
     jsons={}
     content={}
     soup=BeautifulSoup(page_data,"html.parser")
@@ -84,6 +86,7 @@ def convert_detail_to_json(page_data):
 
 
 def convert_behavioutal_to_json(page_data):
+    global value
     jsons={}
     content={}
     soup=BeautifulSoup(page_data,"html.parser")
