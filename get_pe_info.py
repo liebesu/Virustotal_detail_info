@@ -152,7 +152,7 @@ if __name__=="__main__":
     '''for sha256 in allsha256:
         print sha256
         get_page(sha256)'''
-    pool = Pool(processes=70)
+    pool = Pool(processes=200)
     pool.map(get_page, allsha256)
     pool.close()
     pool.join()
