@@ -5,6 +5,7 @@ import re
 from bs4 import BeautifulSoup
 import json
 import MySQLdb
+import time
 from lib.core.readcnf import read_conf
 from lib.core.constants import ROOTPATH
 datebaseip,datebaseuser,datebasepsw,datebasename,datebasetable,sha256filename=read_conf()
@@ -19,7 +20,12 @@ def get_page(sha256):
     conn.request(method='GET', url='/en/file/'+sha256+'/analysis/',
                      headers=headers)
     response = conn.getresponse()
+    print response.status
+    a=open("reason","a")
+    a.write(str(response.status)+"\r\n")
+    a.close()
     if response.status == 200:
+
         HTML=response.read()
         try:
             result['File_defail'] =''
@@ -27,11 +33,23 @@ def get_page(sha256):
             result['File_defail'] = convert_detail_to_json(HTML)
             result['Behavioural']=convert_behavioutal_to_json(HTML)
             json_to_database(sha256,result)
-        except:
+        except Exception as e :
+            print e
             a=open("fail_sha256","a")
-            a.write(sha256)
+            a.write(sha256+"\r\n")
             a.close()
             pass
+    elif response.status == 403:
+        a=open(response.reason,"a")
+        a.write(sha256+"\r\n")
+        a.close()
+        time.sleep(60)
+
+        '''result['File_defail'] =''
+        result['Behavioural'] =''
+        result['File_defail'] = convert_detail_to_json(HTML)
+        result['Behavioural']=convert_behavioutal_to_json(HTML)
+        json_to_database(sha256,result)'''
 def convert_detail_to_json(page_data):
     global value
     jsons={}
@@ -73,19 +91,26 @@ def convert_detail_to_json(page_data):
             enums=enums.find_all(class_="enum")
             content={}
             for enum in enums:
-                if  "ExifTool file metadata" in h5_str :
+                if "Advanced heuristic and reputation engines"  in h5_str:
                     key=enum.find(class_=re.compile("field-key"))
                     key=key.string.encode("utf-8","ignore")
-                if "Advanced heuristic and reputation engines" in h5_str:
+                if "ExifTool file metadata" in h5_str:
                     key=enum.find(class_=re.compile("field-key"))
                     key=key.string.encode("utf-8","ignore")
+                if "Trusted verdicts" in h5_str:
+                    key=""
+
                 else:
                     if enum.span:
                         key=enum.span.stripped_strings.next().encode("utf-8","ignore")
                     else:
-                        key=enum.find(class_=re.compile("field-key"))
-                        key=key.string.encode("utf-8","ignore")
+                        keys=enum.find(class_=re.compile("field-key"))
+                        try:
+                            key=keys.string.encode("utf-8","ignore")
+                        except:
+                            key=""
                 value=enum.get_text(strip=True).encode("utf-8","ignore").replace(key,"").replace("\n","").replace("\\n","").replace("\'","/").replace('"',"/")
+
                 content[key]=value
             jsons[h5_str]=content
     return jsons
@@ -152,7 +177,8 @@ if __name__=="__main__":
     '''for sha256 in allsha256:
         print sha256
         get_page(sha256)'''
-    pool = Pool(processes=70)
+
+    pool = Pool(processes=5)
     pool.map(get_page, allsha256)
     pool.close()
     pool.join()
