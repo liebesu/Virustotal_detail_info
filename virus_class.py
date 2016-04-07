@@ -4,7 +4,6 @@ __author__ = 'liebesu'
 import MySQLdb
 def class_name(sha256):
     sha256=str(sha256).replace("\n","").replace("('","").replace("',)","")
-    print sha256
     try:
         db= MySQLdb.connect(db="malware_info", user="root", passwd="polydata", host="localhost", port=3306)
         cursor = db.cursor()
