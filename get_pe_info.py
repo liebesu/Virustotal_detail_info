@@ -177,12 +177,12 @@ if __name__=="__main__":
     '''for sha256 in allsha256:
         print sha256
         get_page(sha256)'''
-<<<<<<< HEAD
+
 
     pool = Pool(processes=5)
-=======
+
     pool = Pool(processes=200)
->>>>>>> origin/master
+
     pool.map(get_page, allsha256)
     pool.close()
     pool.join()
