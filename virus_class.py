@@ -1,6 +1,7 @@
+__author__ = 'liebesu'
 from multiprocessing.pool import Pool
 
-__author__ = 'liebesu'
+
 import MySQLdb
 def class_name(sha256):
     sha256=str(sha256).replace("\n","").replace("('","").replace("',)","")
